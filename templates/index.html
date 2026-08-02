@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Baixar Áudio do YouTube em Lote</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Baixador de Áudio do YouTube (lote)</h1>
+    <p id="install-warning" class="warning hidden"></p>
+
+    <div class="card">
+      <label for="urls">Cole até 10 links do YouTube (um por linha):</label>
+      <textarea id="urls" rows="8" placeholder="https://www.youtube.com/watch?v=..."></textarea>
+
+      <label class="checkbox-line">
+        <input type="checkbox" id="no-playlist" checked>
+        Ignorar playlist/rádio automática (recomendado — evita baixar centenas de vídeos por engano)
+      </label>
+
+      <div class="actions">
+        <button id="btn-add">Adicionar à fila</button>
+        <button id="btn-start" disabled>Iniciar downloads</button>
+        <button id="btn-cancel" class="danger hidden">Cancelar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="progress-line">
+        <span id="progress-text">0 de 0 concluídos</span>
+      </div>
+      <ul id="queue-list"></ul>
+    </div>
+
+    <div class="card">
+      <p>Pasta de destino: <code id="downloads-path">-</code></p>
+      <button id="btn-open-folder">Abrir pasta</button>
+      <p id="success-message" class="success hidden">Todos os downloads foram concluídos!</p>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
