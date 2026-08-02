@@ -119,7 +119,7 @@ def process_queue(no_playlist):
             "--print", "after_move:filepath",
         ]
         if no_playlist:
-            cmd.insert(3, "--no-playlist")
+            cmd.insert(1, "--no-playlist")
         cmd.append(item["url"])
 
         try:
