@@ -77,7 +77,26 @@ pip install -q -r requirements.txt
 
 echo.
 echo Tudo pronto. Iniciando servidor local...
-start "" http://127.0.0.1:5000
+
+REM Forca abertura em um navegador moderno (Edge ou Chrome), evitando que o
+REM Windows use o Internet Explorer como padrao em maquinas mal configuradas.
+set "EDGE_EXE=%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
+set "EDGE_EXE_ALT=%ProgramFiles%\Microsoft\Edge\Application\msedge.exe"
+set "CHROME_EXE=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
+set "CHROME_EXE_ALT=%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
+
+if exist "%EDGE_EXE%" (
+    start "" "%EDGE_EXE%" "http://127.0.0.1:5000"
+) else if exist "%EDGE_EXE_ALT%" (
+    start "" "%EDGE_EXE_ALT%" "http://127.0.0.1:5000"
+) else if exist "%CHROME_EXE%" (
+    start "" "%CHROME_EXE%" "http://127.0.0.1:5000"
+) else if exist "%CHROME_EXE_ALT%" (
+    start "" "%CHROME_EXE_ALT%" "http://127.0.0.1:5000"
+) else (
+    start "" "http://127.0.0.1:5000"
+)
+
 python app.py
 
 pause
