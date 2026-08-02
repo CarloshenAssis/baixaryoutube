@@ -6,32 +6,30 @@ Programa local (Windows) para baixar em lote o áudio (MP3) de vídeos do YouTub
 
 - Windows
 - Python 3.9+ instalado (com `python` disponível no PATH)
-- `yt-dlp.exe`, `ffmpeg.exe`, `ffprobe.exe` e `ffplay.exe` já presentes em:
-  `C:\Users\carlo\OneDrive\Área de Trabalho\yt-dlp`
+- `yt-dlp.exe`, `ffmpeg.exe`, `ffprobe.exe` e `ffplay.exe` em uma pasta qualquer do seu computador
 
-Se o caminho do yt-dlp for diferente no seu computador, edite a variável `YTDLP_DIR` no início do arquivo `app.py`.
+O caminho dessa pasta é configurado direto pela interface (não precisa editar código) — veja o passo 2 abaixo. Ele fica salvo em `config.json`, na pasta do programa, e é lembrado nas próximas execuções. Ao levar o programa para outro computador, basta apontar o caminho novo na primeira vez que abrir.
 
 ## Como usar
 
 1. Dê duplo clique em `run.bat`.
    - Na primeira execução ele cria um ambiente virtual Python (`venv`) e instala o Flask automaticamente.
    - Em seguida abre o navegador em `http://127.0.0.1:5000`.
-2. Cole até 10 links do YouTube na caixa de texto (um por linha).
-3. Deixe marcada a opção "Ignorar playlist/rádio automática" para baixar só o vídeo do link, mesmo que ele tenha `&list=...` na URL. Desmarque apenas se quiser baixar a playlist inteira.
-4. Clique em "Adicionar à fila" e depois em "Iniciar downloads".
-5. Acompanhe o status de cada item (pendente / baixando / concluído / erro) — a lista atualiza sozinha a cada 2 segundos.
-6. Para interromper, clique em "Cancelar" — o download atual é interrompido, os pendentes não são iniciados, mas os arquivos já concluídos permanecem na pasta.
-7. Ao final, clique em "Abrir pasta" para ver os MP3s no Explorador de Arquivos.
+2. No topo da página, em "Pasta do yt-dlp", clique em "Selecionar pasta..." e escolha a pasta onde estão `yt-dlp.exe`, `ffmpeg.exe` e `ffprobe.exe` (ou cole o caminho direto no campo) e clique em "Salvar".
+3. Cole até 10 links do YouTube na caixa de texto (um por linha).
+4. Deixe marcada a opção "Ignorar playlist/rádio automática" para baixar só o vídeo do link, mesmo que ele tenha `&list=...` na URL. Desmarque apenas se quiser baixar a playlist inteira.
+5. Clique em "Adicionar à fila" e depois em "Iniciar downloads".
+6. Acompanhe o status de cada item (pendente / baixando / concluído / erro) — a lista atualiza sozinha a cada 2 segundos.
+7. Para interromper, clique em "Cancelar" — o download atual é interrompido, os pendentes não são iniciados, mas os arquivos já concluídos permanecem na pasta.
+8. Ao final, clique em "Abrir pasta" para ver os MP3s no Explorador de Arquivos.
 
 ## Onde os arquivos são salvos
 
-Os MP3s são salvos em:
-`C:\Users\carlo\OneDrive\Área de Trabalho\yt-dlp\downloads`
-
-Essa pasta é criada automaticamente se não existir.
+Os MP3s são salvos em uma subpasta `downloads` dentro da pasta do yt-dlp que você configurou (por exemplo `<pasta escolhida>\downloads`). Essa pasta é criada automaticamente se não existir.
 
 ## Problemas comuns
 
+- **"Configure a pasta do yt-dlp antes de iniciar"**: use o botão "Selecionar pasta..." e depois "Salvar" antes de adicionar links à fila.
 - **"Arquivos não encontrados na pasta configurada"**: confira se `yt-dlp.exe`, `ffmpeg.exe` e `ffprobe.exe` realmente estão na pasta indicada.
 - **"Link inválido"**: o texto colado não é uma URL do YouTube.
 - **"Vídeo indisponível/privado/removido"**: o yt-dlp não conseguiu acessar o vídeo (removido, privado, restrito por idade, etc).

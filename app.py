@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import subprocess
@@ -9,10 +10,8 @@ from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
 
-# Pasta onde estão yt-dlp.exe, ffmpeg.exe, ffprobe.exe, ffplay.exe
-YTDLP_DIR = r"C:\Users\carlo\OneDrive\Área de Trabalho\yt-dlp"
-YTDLP_EXE = os.path.join(YTDLP_DIR, "yt-dlp.exe")
-DOWNLOADS_DIR = os.path.join(YTDLP_DIR, "downloads")
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG_PATH = os.path.join(APP_DIR, "config.json")
 
 YOUTUBE_HOST_RE = re.compile(
     r"^(www\.|m\.|music\.)?(youtube\.com|youtu\.be)$", re.IGNORECASE
@@ -25,6 +24,39 @@ current_process = None
 process_lock = threading.Lock()
 worker_thread = None
 cancel_requested = False
+settings_lock = threading.Lock()
+
+
+def load_settings():
+    if os.path.isfile(CONFIG_PATH):
+        try:
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return {"ytdlp_dir": data.get("ytdlp_dir", "")}
+        except Exception:
+            pass
+    return {"ytdlp_dir": ""}
+
+
+def save_settings(settings):
+    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+        json.dump(settings, f, ensure_ascii=False, indent=2)
+
+
+settings = load_settings()
+
+
+def get_ytdlp_dir():
+    with settings_lock:
+        return settings.get("ytdlp_dir", "")
+
+
+def get_ytdlp_exe():
+    return os.path.join(get_ytdlp_dir(), "yt-dlp.exe")
+
+
+def get_downloads_dir():
+    return os.path.join(get_ytdlp_dir(), "downloads")
 
 
 def is_youtube_url(url):
@@ -38,23 +70,29 @@ def is_youtube_url(url):
 
 
 def check_installation():
+    ytdlp_dir = get_ytdlp_dir()
+    if not ytdlp_dir:
+        return ["pasta do yt-dlp não configurada"]
     missing = []
-    if not os.path.isfile(YTDLP_EXE):
+    if not os.path.isfile(os.path.join(ytdlp_dir, "yt-dlp.exe")):
         missing.append("yt-dlp.exe")
     for exe in ("ffmpeg.exe", "ffprobe.exe"):
-        if not os.path.isfile(os.path.join(YTDLP_DIR, exe)):
+        if not os.path.isfile(os.path.join(ytdlp_dir, exe)):
             missing.append(exe)
     return missing
 
 
 def ensure_downloads_dir():
-    os.makedirs(DOWNLOADS_DIR, exist_ok=True)
+    os.makedirs(get_downloads_dir(), exist_ok=True)
 
 
 def process_queue(no_playlist):
     global current_process, cancel_requested
 
     ensure_downloads_dir()
+    ytdlp_dir = get_ytdlp_dir()
+    ytdlp_exe = get_ytdlp_exe()
+    downloads_dir = get_downloads_dir()
 
     for item in queue:
         with queue_lock:
@@ -66,11 +104,11 @@ def process_queue(no_playlist):
             item["status"] = "baixando"
 
         cmd = [
-            YTDLP_EXE,
+            ytdlp_exe,
             "-x",
             "--audio-format", "mp3",
-            "--ffmpeg-location", YTDLP_DIR,
-            "-o", os.path.join(DOWNLOADS_DIR, "%(title)s.%(ext)s"),
+            "--ffmpeg-location", ytdlp_dir,
+            "-o", os.path.join(downloads_dir, "%(title)s.%(ext)s"),
             "--print", "after_move:filepath",
         ]
         if no_playlist:
@@ -152,7 +190,56 @@ def index():
 @app.route("/api/check")
 def api_check():
     missing = check_installation()
-    return jsonify({"ok": len(missing) == 0, "missing": missing, "path": YTDLP_DIR})
+    return jsonify({"ok": len(missing) == 0, "missing": missing, "path": get_ytdlp_dir()})
+
+
+@app.route("/api/settings", methods=["GET"])
+def api_get_settings():
+    return jsonify({"ytdlp_dir": get_ytdlp_dir()})
+
+
+@app.route("/api/settings", methods=["POST"])
+def api_save_settings():
+    data = request.get_json(force=True) or {}
+    path = (data.get("ytdlp_dir") or "").strip().strip('"')
+
+    if not path:
+        return jsonify({"error": "Informe um caminho de pasta."}), 400
+    if not os.path.isdir(path):
+        return jsonify({"error": "A pasta informada não existe."}), 400
+
+    with settings_lock:
+        settings["ytdlp_dir"] = path
+        save_settings(settings)
+
+    missing = check_installation()
+    return jsonify({"ytdlp_dir": path, "ok": len(missing) == 0, "missing": missing})
+
+
+@app.route("/api/browse-folder", methods=["POST"])
+def api_browse_folder():
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+    except ImportError:
+        return jsonify({"error": "Seleção de pasta nativa não disponível neste sistema."}), 400
+
+    result = {}
+
+    def run_dialog():
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes("-topmost", True)
+        initial = get_ytdlp_dir() or os.path.expanduser("~")
+        chosen = filedialog.askdirectory(initialdir=initial, title="Selecione a pasta do yt-dlp")
+        root.destroy()
+        result["path"] = chosen
+
+    dialog_thread = threading.Thread(target=run_dialog)
+    dialog_thread.start()
+    dialog_thread.join()
+
+    return jsonify({"path": result.get("path") or ""})
 
 
 @app.route("/api/queue", methods=["POST"])
@@ -192,6 +279,9 @@ def api_add_queue():
 @app.route("/api/start", methods=["POST"])
 def api_start():
     global worker_thread, cancel_requested
+
+    if not get_ytdlp_dir():
+        return jsonify({"error": "Configure a pasta do yt-dlp antes de iniciar."}), 400
 
     missing = check_installation()
     if missing:
@@ -242,15 +332,17 @@ def api_status():
         "concluidos": concluidos,
         "total": total,
         "running": running,
-        "downloads_dir": DOWNLOADS_DIR,
+        "downloads_dir": get_downloads_dir() if get_ytdlp_dir() else "",
     })
 
 
 @app.route("/api/open-folder", methods=["POST"])
 def api_open_folder():
+    if not get_ytdlp_dir():
+        return jsonify({"error": "Configure a pasta do yt-dlp antes de abrir a pasta."}), 400
     ensure_downloads_dir()
     try:
-        os.startfile(DOWNLOADS_DIR)  # noqa: only valid on Windows
+        os.startfile(get_downloads_dir())  # noqa: only valid on Windows
         return jsonify({"opened": True})
     except AttributeError:
         return jsonify({"error": "Abrir pasta só é suportado no Windows."}), 400
@@ -259,5 +351,6 @@ def api_open_folder():
 
 
 if __name__ == "__main__":
-    ensure_downloads_dir()
+    if get_ytdlp_dir():
+        ensure_downloads_dir()
     app.run(host="127.0.0.1", port=5000, debug=False)

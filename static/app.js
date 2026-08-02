@@ -9,9 +9,14 @@ const progressText = document.getElementById("progress-text");
 const downloadsPathEl = document.getElementById("downloads-path");
 const successMessage = document.getElementById("success-message");
 const installWarning = document.getElementById("install-warning");
+const ytdlpDirEl = document.getElementById("ytdlp-dir");
+const btnBrowse = document.getElementById("btn-browse");
+const btnSavePath = document.getElementById("btn-save-path");
+const pathStatus = document.getElementById("path-status");
 
 let pollTimer = null;
 let hasQueue = false;
+let pathConfigured = false;
 
 function statusLabel(status) {
   const map = {
@@ -54,12 +59,75 @@ async function checkInstallation() {
   const res = await fetch("/api/check");
   const data = await res.json();
   if (!data.ok) {
-    installWarning.textContent =
-      `Atenção: arquivos não encontrados em "${data.path}": ${data.missing.join(", ")}. Verifique a instalação do yt-dlp/ffmpeg.`;
+    if (data.path) {
+      installWarning.textContent =
+        `Atenção: arquivos não encontrados em "${data.path}": ${data.missing.join(", ")}. Verifique a instalação do yt-dlp/ffmpeg.`;
+    } else {
+      installWarning.textContent =
+        "Configure abaixo a pasta onde estão yt-dlp.exe e ffmpeg.exe antes de usar.";
+    }
     installWarning.classList.remove("hidden");
+    pathConfigured = false;
   } else {
     installWarning.classList.add("hidden");
+    pathConfigured = true;
   }
+  updateAddButtonState();
+}
+
+function updateAddButtonState() {
+  btnAdd.disabled = !pathConfigured;
+}
+
+async function loadSettings() {
+  const res = await fetch("/api/settings");
+  const data = await res.json();
+  ytdlpDirEl.value = data.ytdlp_dir || "";
+}
+
+async function browseFolder() {
+  btnBrowse.disabled = true;
+  try {
+    const res = await fetch("/api/browse-folder", { method: "POST" });
+    const data = await res.json();
+    if (data.path) {
+      ytdlpDirEl.value = data.path;
+    }
+  } finally {
+    btnBrowse.disabled = false;
+  }
+}
+
+async function savePath() {
+  const path = ytdlpDirEl.value.trim();
+  if (!path) {
+    alert("Informe ou selecione uma pasta.");
+    return;
+  }
+
+  const res = await fetch("/api/settings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ytdlp_dir: path }),
+  });
+  const data = await res.json();
+
+  if (!res.ok) {
+    pathStatus.textContent = data.error || "Erro ao salvar caminho.";
+    pathStatus.className = "path-status error";
+    return;
+  }
+
+  if (data.ok) {
+    pathStatus.textContent = "Caminho salvo e válido. yt-dlp e ffmpeg encontrados.";
+    pathStatus.className = "path-status ok";
+  } else {
+    pathStatus.textContent = `Caminho salvo, mas faltam arquivos: ${data.missing.join(", ")}.`;
+    pathStatus.className = "path-status error";
+  }
+
+  await checkInstallation();
+  await pollStatus();
 }
 
 async function addQueue() {
@@ -171,6 +239,9 @@ btnAdd.addEventListener("click", addQueue);
 btnStart.addEventListener("click", startDownloads);
 btnCancel.addEventListener("click", cancelDownloads);
 btnOpenFolder.addEventListener("click", openFolder);
+btnBrowse.addEventListener("click", browseFolder);
+btnSavePath.addEventListener("click", savePath);
 
+loadSettings();
 checkInstallation();
 pollStatus();

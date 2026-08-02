@@ -97,6 +97,32 @@ button.danger {
   margin-top: 10px;
 }
 
+.path-line {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.path-line input {
+  flex: 1;
+  padding: 8px;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.path-status {
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+
+.path-status.ok {
+  color: #155724;
+}
+
+.path-status.error {
+  color: #b00020;
+}
+
 .progress-line {
   font-weight: 600;
   margin-bottom: 10px;

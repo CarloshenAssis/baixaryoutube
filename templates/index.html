@@ -11,6 +11,16 @@
     <p id="install-warning" class="warning hidden"></p>
 
     <div class="card">
+      <label for="ytdlp-dir">Pasta do yt-dlp (onde estão yt-dlp.exe, ffmpeg.exe, ffprobe.exe):</label>
+      <div class="path-line">
+        <input type="text" id="ytdlp-dir" placeholder="C:\caminho\para\yt-dlp">
+        <button id="btn-browse" type="button">Selecionar pasta...</button>
+        <button id="btn-save-path" type="button">Salvar</button>
+      </div>
+      <p id="path-status" class="path-status"></p>
+    </div>
+
+    <div class="card">
       <label for="urls">Cole até 10 links do YouTube (um por linha):</label>
       <textarea id="urls" rows="8" placeholder="https://www.youtube.com/watch?v=..."></textarea>
 
