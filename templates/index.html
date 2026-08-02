@@ -2,53 +2,99 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Baixar Áudio do YouTube em Lote</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Baixador de Áudio do YouTube (lote)</h1>
-    <p id="install-warning" class="warning hidden"></p>
+  <header class="topbar">
+    <h1>Baixador de Áudio do YouTube</h1>
+    <p class="subtitle">Cole os links, baixe o áudio em MP3, um por vez.</p>
+  </header>
 
-    <div class="card">
-      <label for="ytdlp-dir">Pasta do yt-dlp (onde estão yt-dlp.exe, ffmpeg.exe, ffprobe.exe):</label>
-      <div class="path-line">
-        <input type="text" id="ytdlp-dir" placeholder="C:\caminho\para\yt-dlp">
-        <button id="btn-browse" type="button">Selecionar pasta...</button>
-        <button id="btn-save-path" type="button">Salvar</button>
+  <main class="container">
+    <p id="install-warning" class="banner warning hidden"></p>
+
+    <section class="step" id="step-1">
+      <div class="step-header">
+        <span class="step-number">1</span>
+        <div>
+          <h2>Pasta do yt-dlp</h2>
+          <p class="step-desc">Onde estão <code>yt-dlp.exe</code>, <code>ffmpeg.exe</code> e <code>ffprobe.exe</code>.</p>
+        </div>
+        <span id="step-1-badge" class="step-badge hidden">Configurado</span>
       </div>
-      <p id="path-status" class="path-status"></p>
-    </div>
-
-    <div class="card">
-      <label for="urls">Cole até 10 links do YouTube (um por linha):</label>
-      <textarea id="urls" rows="8" placeholder="https://www.youtube.com/watch?v=..."></textarea>
-
-      <label class="checkbox-line">
-        <input type="checkbox" id="no-playlist" checked>
-        Ignorar playlist/rádio automática (recomendado — evita baixar centenas de vídeos por engano)
-      </label>
-
-      <div class="actions">
-        <button id="btn-add">Adicionar à fila</button>
-        <button id="btn-start" disabled>Iniciar downloads</button>
-        <button id="btn-cancel" class="danger hidden">Cancelar</button>
+      <div class="step-body">
+        <div class="path-line">
+          <input type="text" id="ytdlp-dir" placeholder="C:\caminho\para\yt-dlp">
+          <button id="btn-browse" type="button" class="secondary">Selecionar pasta...</button>
+          <button id="btn-save-path" type="button">Salvar</button>
+        </div>
+        <p id="path-status" class="path-status"></p>
       </div>
-    </div>
+    </section>
 
-    <div class="card">
-      <div class="progress-line">
-        <span id="progress-text">0 de 0 concluídos</span>
+    <section class="step" id="step-2">
+      <div class="step-header">
+        <span class="step-number">2</span>
+        <div>
+          <h2>Links do YouTube</h2>
+          <p class="step-desc">Até 10 links, um por linha.</p>
+        </div>
       </div>
-      <ul id="queue-list"></ul>
-    </div>
+      <div class="step-body">
+        <textarea id="urls" rows="7" placeholder="https://www.youtube.com/watch?v=..."></textarea>
 
-    <div class="card">
-      <p>Pasta de destino: <code id="downloads-path">-</code></p>
-      <button id="btn-open-folder">Abrir pasta</button>
-      <p id="success-message" class="success hidden">Todos os downloads foram concluídos!</p>
-    </div>
-  </div>
+        <label class="checkbox-line">
+          <input type="checkbox" id="no-playlist" checked>
+          Ignorar playlist/rádio automática (recomendado — evita baixar centenas de vídeos por engano)
+        </label>
+
+        <button id="btn-add" class="primary">Adicionar à fila</button>
+      </div>
+    </section>
+
+    <section class="step" id="step-3">
+      <div class="step-header">
+        <span class="step-number">3</span>
+        <div>
+          <h2>Fila de downloads</h2>
+          <p class="step-desc" id="queue-empty-hint">Nenhum link na fila ainda.</p>
+        </div>
+      </div>
+      <div class="step-body">
+        <div id="progress-wrap" class="progress-wrap hidden">
+          <div class="progress-top">
+            <span id="progress-text">0 de 0 concluídos</span>
+          </div>
+          <div class="progress-bar-track">
+            <div id="progress-bar-fill" class="progress-bar-fill"></div>
+          </div>
+        </div>
+
+        <ul id="queue-list"></ul>
+
+        <div class="step-actions">
+          <button id="btn-start" class="primary" disabled>Iniciar downloads</button>
+          <button id="btn-cancel" class="danger hidden">Cancelar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="step-4">
+      <div class="step-header">
+        <span class="step-number">4</span>
+        <div>
+          <h2>Arquivos baixados</h2>
+          <p class="step-desc">Pasta: <code id="downloads-path">-</code></p>
+        </div>
+      </div>
+      <div class="step-body">
+        <button id="btn-open-folder" class="secondary">Abrir pasta</button>
+        <p id="success-message" class="banner success hidden">Todos os downloads foram concluídos!</p>
+      </div>
+    </section>
+  </main>
 
   <script src="/static/app.js"></script>
 </body>

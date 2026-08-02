@@ -5,7 +5,10 @@ const btnStart = document.getElementById("btn-start");
 const btnCancel = document.getElementById("btn-cancel");
 const btnOpenFolder = document.getElementById("btn-open-folder");
 const queueList = document.getElementById("queue-list");
+const queueEmptyHint = document.getElementById("queue-empty-hint");
+const progressWrap = document.getElementById("progress-wrap");
 const progressText = document.getElementById("progress-text");
+const progressBarFill = document.getElementById("progress-bar-fill");
 const downloadsPathEl = document.getElementById("downloads-path");
 const successMessage = document.getElementById("success-message");
 const installWarning = document.getElementById("install-warning");
@@ -13,9 +16,12 @@ const ytdlpDirEl = document.getElementById("ytdlp-dir");
 const btnBrowse = document.getElementById("btn-browse");
 const btnSavePath = document.getElementById("btn-save-path");
 const pathStatus = document.getElementById("path-status");
+const step1Badge = document.getElementById("step-1-badge");
+const step2 = document.getElementById("step-2");
+const step3 = document.getElementById("step-3");
+const step4 = document.getElementById("step-4");
 
 let pollTimer = null;
-let hasQueue = false;
 let pathConfigured = false;
 
 function statusLabel(status) {
@@ -29,8 +35,16 @@ function statusLabel(status) {
   return map[status] || status;
 }
 
+function setStepLocked(stepEl, locked) {
+  stepEl.classList.toggle("disabled", locked);
+}
+
 function renderQueue(queue) {
   queueList.innerHTML = "";
+  queueEmptyHint.textContent = queue.length === 0
+    ? "Nenhum link na fila ainda."
+    : "";
+
   queue.forEach((item) => {
     const li = document.createElement("li");
 
@@ -64,14 +78,17 @@ async function checkInstallation() {
         `Atenção: arquivos não encontrados em "${data.path}": ${data.missing.join(", ")}. Verifique a instalação do yt-dlp/ffmpeg.`;
     } else {
       installWarning.textContent =
-        "Configure abaixo a pasta onde estão yt-dlp.exe e ffmpeg.exe antes de usar.";
+        "Configure abaixo a pasta onde estão yt-dlp.exe e ffmpeg.exe antes de usar (etapa 1).";
     }
     installWarning.classList.remove("hidden");
     pathConfigured = false;
+    step1Badge.classList.add("hidden");
   } else {
     installWarning.classList.add("hidden");
     pathConfigured = true;
+    step1Badge.classList.remove("hidden");
   }
+  setStepLocked(step2, !pathConfigured);
   updateAddButtonState();
 }
 
@@ -154,16 +171,24 @@ async function addQueue() {
     return;
   }
 
-  hasQueue = true;
   renderQueue(data.queue);
   updateProgress(data.queue);
+  setStepLocked(step3, false);
   btnStart.disabled = false;
   successMessage.classList.add("hidden");
+  step3.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function updateProgress(queue) {
+  const total = queue.length;
   const concluidos = queue.filter((i) => i.status === "concluido").length;
-  progressText.textContent = `${concluidos} de ${queue.length} concluídos`;
+  const finalizados = queue.filter((i) =>
+    ["concluido", "erro", "cancelado"].includes(i.status)
+  ).length;
+
+  progressWrap.classList.toggle("hidden", total === 0);
+  progressText.textContent = `${concluidos} de ${total} concluídos`;
+  progressBarFill.style.width = total === 0 ? "0%" : `${(finalizados / total) * 100}%`;
 }
 
 async function startDownloads() {
@@ -217,11 +242,12 @@ async function pollStatus() {
 
   renderQueue(data.queue);
   updateProgress(data.queue);
-  downloadsPathEl.textContent = data.downloads_dir;
+  downloadsPathEl.textContent = data.downloads_dir || "-";
+  setStepLocked(step4, !data.downloads_dir);
 
   if (!data.running) {
     stopPolling();
-    btnAdd.disabled = false;
+    btnAdd.disabled = !pathConfigured;
     btnCancel.classList.add("hidden");
 
     const total = data.queue.length;
@@ -230,7 +256,6 @@ async function pollStatus() {
     );
     if (total > 0 && finished && data.concluidos === total) {
       successMessage.classList.remove("hidden");
-      btnOpenFolder.classList.add("highlight");
     }
   }
 }
@@ -241,6 +266,10 @@ btnCancel.addEventListener("click", cancelDownloads);
 btnOpenFolder.addEventListener("click", openFolder);
 btnBrowse.addEventListener("click", browseFolder);
 btnSavePath.addEventListener("click", savePath);
+
+setStepLocked(step2, true);
+setStepLocked(step3, true);
+setStepLocked(step4, true);
 
 loadSettings();
 checkInstallation();
