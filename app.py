@@ -12,6 +12,7 @@ app = Flask(__name__)
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(APP_DIR, "config.json")
+BUNDLED_BIN_DIR = os.path.join(APP_DIR, "bin")
 
 YOUTUBE_HOST_RE = re.compile(
     r"^(www\.|m\.|music\.)?(youtube\.com|youtu\.be)$", re.IGNORECASE
@@ -35,6 +36,12 @@ def load_settings():
                 return {"ytdlp_dir": data.get("ytdlp_dir", "")}
         except Exception:
             pass
+
+    # Sem config ainda: se o run.bat já baixou o yt-dlp/ffmpeg para a pasta
+    # "bin" ao lado do app, usa isso como padrão automaticamente.
+    if os.path.isfile(os.path.join(BUNDLED_BIN_DIR, "yt-dlp.exe")):
+        return {"ytdlp_dir": BUNDLED_BIN_DIR}
+
     return {"ytdlp_dir": ""}
 
 
