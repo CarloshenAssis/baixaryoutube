@@ -1,0 +1,181 @@
+* { box-sizing: border-box; }
+
+body {
+  font-family: Segoe UI, Arial, sans-serif;
+  background: #f4f4f6;
+  color: #222;
+  margin: 0;
+  padding: 24px;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+textarea {
+  width: 100%;
+  font-family: monospace;
+  font-size: 13px;
+  padding: 8px;
+  margin-top: 6px;
+  margin-bottom: 12px;
+  resize: vertical;
+}
+
+label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.checkbox-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+  margin-bottom: 12px;
+}
+
+.checkbox-line input {
+  width: 16px;
+  height: 16px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #cc0000;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+button.danger {
+  background: #444;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.warning {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.success {
+  background: #d4edda;
+  border: 1px solid #28a745;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.path-line {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.path-line input {
+  flex: 1;
+  padding: 8px;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.path-status {
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+
+.path-status.ok {
+  color: #155724;
+}
+
+.path-status.error {
+  color: #b00020;
+}
+
+.progress-line {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+#queue-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#queue-list li {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+#queue-list li:last-child {
+  border-bottom: none;
+}
+
+.item-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.item-error {
+  font-size: 12px;
+  color: #b00020;
+  display: block;
+}
+
+.status-badge {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.status-pendente { background: #eee; color: #555; }
+.status-baixando { background: #cfe8ff; color: #084298; }
+.status-concluido { background: #d4edda; color: #155724; }
+.status-erro { background: #f8d7da; color: #721c24; }
+.status-cancelado { background: #eee; color: #555; }
+
+code {
+  background: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
